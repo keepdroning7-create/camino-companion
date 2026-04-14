@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,9 +49,16 @@ jobs:
       - name: Build release APK (unsigned)
         run: cd android && ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: camino-companion-release
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          retention-days: 30
+          tag_name: build-${{ github.run_number }}
+          name: "Camino Companion #${{ github.run_number }}"
+          body: |
+            Automatyczny build z commita `${{ github.sha }}`.
+
+            **Instalacja:**
+            1. Pobierz plik `.apk` poniżej
+            2. Na telefonie: Ustawienia → Bezpieczeństwo → Instalacja z nieznanych źródeł
+            3. Otwórz pobrany plik i zainstaluj
+          files: android/app/build/outputs/apk/release/app-release-unsigned.apk
