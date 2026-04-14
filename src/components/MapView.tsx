@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import { CaminoRoute } from "../data/camino";
-import { Navigation } from "lucide-react";
+import { Navigation, Share2 } from "lucide-react";
 
 // Fix Leaflet default icon issue in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -50,6 +50,13 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
   const [userPos, setUserPos] = useState<[number, number] | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [watchId, setWatchId] = useState<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [watchId]);
 
   const allPoints: [number, number][] = [
     route.startCoordinates,
@@ -58,14 +65,42 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
 
   const currentCenter = route.stages[currentStageIndex]?.coordinates || route.startCoordinates;
 
+  const handleShare = async () => {
+    if (!userPos) {
+      handleLocate();
+      return;
+    }
+    const [lat, lng] = userPos;
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
+    const text = `Jestem na Camino tutaj: ${url}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Moja lokalizacja", text, url });
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Lokalizacja skopiowana do schowka");
+      } catch {
+        prompt("Skopiuj lokalizację:", text);
+      }
+    }
+  };
+
   const handleLocate = () => {
     if (!navigator.geolocation) {
       setGpsError("GPS niedostępny");
       return;
     }
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      setWatchId(null);
+      setUserPos(null);
+      return;
+    }
     setGpsLoading(true);
     setGpsError(null);
-    navigator.geolocation.getCurrentPosition(
+    const id = navigator.geolocation.watchPosition(
       (pos) => {
         setUserPos([pos.coords.latitude, pos.coords.longitude]);
         setGpsLoading(false);
@@ -74,8 +109,9 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
         setGpsError("Nie można pobrać lokalizacji");
         setGpsLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
     );
+    setWatchId(id);
   };
 
   return (
@@ -84,17 +120,27 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
         <h1 className="font-serif text-2xl text-camino-blue drop-shadow-sm">{route.name}</h1>
       </div>
 
-      {/* GPS button */}
+      {/* GPS + Share buttons */}
       <div className="absolute bottom-20 right-4 z-[400] flex flex-col items-end space-y-2">
         {gpsError && (
           <div className="bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded-lg shadow">
             {gpsError}
           </div>
         )}
+        {userPos && (
+          <button
+            onClick={handleShare}
+            className="w-12 h-12 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-camino-earth hover:bg-camino-sand transition-colors"
+            title="Udostępnij lokalizację"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+        )}
         <button
           onClick={handleLocate}
           disabled={gpsLoading}
           className="w-12 h-12 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-camino-blue hover:bg-camino-sand transition-colors disabled:opacity-60"
+          title="Moja lokalizacja"
         >
           <Navigation className={`w-5 h-5 ${gpsLoading ? "animate-pulse" : ""} ${userPos ? "fill-camino-blue" : ""}`} />
         </button>

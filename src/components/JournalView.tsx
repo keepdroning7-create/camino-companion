@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { PenLine, Save, Plus, Minus, Euro, Utensils, Bed, Bus, ShoppingBag, BookOpen } from "lucide-react";
+import { PenLine, Save, Plus, Minus, Euro, Utensils, Bed, Bus, ShoppingBag, BookOpen, type LucideIcon } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface JournalEntry {
@@ -10,6 +10,7 @@ interface JournalEntry {
 
 interface Expense {
   id: string;
+  date: string;
   amount: number;
   category: "food" | "albergue" | "transport" | "other";
   note: string;
@@ -77,7 +78,7 @@ export function JournalView() {
     localStorage.setItem("camino_sellos", JSON.stringify(next));
   };
 
-  const totalSellos = Object.values(sellos).reduce((a, b) => a + b, 0);
+  const totalSellos = (Object.values(sellos) as number[]).reduce((a, b) => a + b, 0);
 
   // --- Budget ---
   const todayExpenses = expenses.filter(e => e.date === today);
@@ -87,14 +88,14 @@ export function JournalView() {
   const addExpense = () => {
     const amount = parseFloat(expenseAmount);
     if (!amount || amount <= 0) return;
-    const newExpense: Expense & { date: string } = {
+    const newExpense: Expense = {
       id: Date.now().toString(),
       date: today,
       amount,
       category: expenseCategory,
       note: expenseNote,
     };
-    const next = [newExpense, ...expenses] as any[];
+    const next = [newExpense, ...expenses];
     setExpenses(next);
     localStorage.setItem("camino_expenses", JSON.stringify(next));
     setExpenseAmount("");
@@ -102,12 +103,12 @@ export function JournalView() {
   };
 
   const removeExpense = (id: string) => {
-    const next = expenses.filter((e: any) => e.id !== id);
+    const next = expenses.filter(e => e.id !== id);
     setExpenses(next);
     localStorage.setItem("camino_expenses", JSON.stringify(next));
   };
 
-  const tabs: { id: ActiveTab; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: ActiveTab; label: string; icon: LucideIcon }[] = [
     { id: "journal", label: "Dziennik", icon: PenLine },
     { id: "sellos", label: "Sellos", icon: BookOpen },
     { id: "budget", label: "Budżet", icon: Euro },
@@ -232,7 +233,7 @@ export function JournalView() {
           {/* History */}
           <h2 className="font-serif text-xl text-camino-blue mb-3">Historia sellos</h2>
           <div className="space-y-2">
-            {Object.entries(sellos)
+            {(Object.entries(sellos) as [string, number][])
               .filter(([, count]) => count > 0)
               .sort(([a], [b]) => b.localeCompare(a))
               .map(([date, count]) => (
@@ -329,8 +330,8 @@ export function JournalView() {
             <p className="text-gray-400 text-center py-6 italic text-sm">Brak wydatków dzisiaj.</p>
           ) : (
             <div className="space-y-2">
-              {todayExpenses.map((expense: any) => {
-                const cfg = CATEGORY_CONFIG[expense.category as Expense["category"]];
+              {todayExpenses.map((expense) => {
+                const cfg = CATEGORY_CONFIG[expense.category];
                 return (
                   <div key={expense.id} className="bg-white rounded-xl p-4 flex items-center justify-between border border-gray-100">
                     <div className="flex items-center space-x-3">

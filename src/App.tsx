@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BottomNav, Tab } from "./components/BottomNav";
 import { HomeView } from "./components/HomeView";
 import { MapView } from "./components/MapView";
@@ -9,12 +9,41 @@ import { InfoView } from "./components/InfoView";
 import { PaywallModal } from "./components/PaywallModal";
 import { CAMINO_ROUTES } from "./data/camino";
 
+const STORAGE_KEY = "camino_progress";
+
+interface SavedProgress {
+  routeId: string;
+  stageIndex: number;
+}
+
+function loadProgress(): SavedProgress {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved) as SavedProgress;
+      const route = CAMINO_ROUTES.find(r => r.id === parsed.routeId);
+      if (route && parsed.stageIndex >= 0 && parsed.stageIndex < route.stages.length) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return { routeId: CAMINO_ROUTES[0].id, stageIndex: 0 };
+}
+
 export default function App() {
+  const initial = loadProgress();
   const [activeTab, setActiveTab] = useState<Tab>("home");
-  const [currentRouteId, setCurrentRouteId] = useState<string>(CAMINO_ROUTES[0].id);
-  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  const [currentRouteId, setCurrentRouteId] = useState<string>(initial.routeId);
+  const [currentStageIndex, setCurrentStageIndex] = useState(initial.stageIndex);
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ routeId: currentRouteId, stageIndex: currentStageIndex })
+    );
+  }, [currentRouteId, currentStageIndex]);
 
   const currentRoute = CAMINO_ROUTES.find(r => r.id === currentRouteId) || CAMINO_ROUTES[0];
 
