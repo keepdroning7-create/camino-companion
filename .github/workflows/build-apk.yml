@@ -46,8 +46,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build release APK (unsigned)
-        run: cd android && ./gradlew assembleRelease --no-daemon
+      - name: Build debug APK (signed with debug key)
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk camino-companion.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -58,7 +61,7 @@ jobs:
             Automatyczny build z commita `${{ github.sha }}`.
 
             **Instalacja:**
-            1. Pobierz plik `.apk` poniżej
+            1. Pobierz plik `camino-companion.apk` poniżej
             2. Na telefonie: Ustawienia → Bezpieczeństwo → Instalacja z nieznanych źródeł
             3. Otwórz pobrany plik i zainstaluj
-          files: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          files: camino-companion.apk
