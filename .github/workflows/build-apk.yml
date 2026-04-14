@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -40,12 +40,12 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Build release APK (unsigned)
+        run: cd android && ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: camino-companion-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: camino-companion-release
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
