@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-camino-blue: #0f2c59;
+  --color-camino-gold: #d4af37;
+  --color-camino-sand: #fdfbf7;
+  --color-camino-earth: #8b5a2b;
+}
+
+body {
+  background-color: var(--color-camino-sand);
+  color: #1f2937;
+}
