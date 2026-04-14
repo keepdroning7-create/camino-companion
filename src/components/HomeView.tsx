@@ -1,5 +1,5 @@
 import { CaminoRoute } from "../data/camino";
-import { ChevronRight, MapPin, PlayCircle } from "lucide-react";
+import { ChevronRight, MapPin, PlayCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface HomeViewProps {
@@ -8,9 +8,10 @@ interface HomeViewProps {
   currentStageIndex: number;
   onGoToStage: () => void;
   onSelectRoute: (id: string) => void;
+  onCompleteStage: () => void;
 }
 
-export function HomeView({ currentRoute, routes, currentStageIndex, onGoToStage, onSelectRoute }: HomeViewProps) {
+export function HomeView({ currentRoute, routes, currentStageIndex, onGoToStage, onSelectRoute, onCompleteStage }: HomeViewProps) {
   const currentStage = currentRoute.stages[currentStageIndex];
   const progress = ((currentStageIndex) / currentRoute.totalDays) * 100;
 
@@ -84,6 +85,15 @@ export function HomeView({ currentRoute, routes, currentStageIndex, onGoToStage,
           </div>
           <ChevronRight className="w-5 h-5 text-white/50" />
         </div>
+      </button>
+
+      <button
+        onClick={onCompleteStage}
+        disabled={currentStageIndex >= currentRoute.stages.length - 1}
+        className="w-full mt-3 flex items-center justify-center space-x-2 py-3.5 rounded-2xl bg-green-500 text-white font-semibold text-sm shadow-sm hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <CheckCircle2 className="w-5 h-5" />
+        <span>Etap ukończony — następny dzień</span>
       </button>
 
       {/* Upcoming Stages List */}

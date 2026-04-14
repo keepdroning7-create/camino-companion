@@ -1,0 +1,6 @@
+{
+  "name": "Camino Companion",
+  "description": "Catholic Pilgrimage Companion for the Camino de Santiago. Features GPS routing, daily devotions, audio guides, and journaling.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}

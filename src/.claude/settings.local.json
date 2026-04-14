@@ -6,7 +6,12 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Read(//c/Program Files/**)",
-      "Read(//c/Users/ewakr/AppData/Local/**)"
+      "Read(//c/Users/ewakr/AppData/Local/**)",
+      "Bash(npx cap:*)",
+      "Bash(mkdir -p /c/Users/ewakr/android-sdk/cmdline-tools)",
+      "Bash(curl -L \"https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip\" -o /tmp/cmdline-tools.zip --progress-bar)",
+      "Bash(flutter --version)",
+      "Bash(dart --version)"
     ]
   }
 }

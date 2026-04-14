@@ -44,6 +44,13 @@ export default function App() {
     setActiveTab("stage");
   };
 
+  const handleCompleteStage = () => {
+    if (currentStageIndex < currentRoute.stages.length - 1) {
+      setCurrentStageIndex(i => i + 1);
+      setActiveTab("home");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-camino-sand font-sans text-gray-900">
       {activeTab === "home" && (
@@ -53,6 +60,7 @@ export default function App() {
           currentStageIndex={currentStageIndex}
           onGoToStage={handleGoToStage}
           onSelectRoute={handleSelectRoute}
+          onCompleteStage={handleCompleteStage}
         />
       )}
 
@@ -70,6 +78,7 @@ export default function App() {
           onShowPaywall={() => setShowPaywall(true)}
           onPrevStage={handlePrevStage}
           onNextStage={handleNextStage}
+          onCompleteStage={handleCompleteStage}
           hasPrev={currentStageIndex > 0}
           hasNext={currentStageIndex < currentRoute.stages.length - 1}
           totalStages={currentRoute.stages.length}

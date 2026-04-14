@@ -1,7 +1,8 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import { CaminoRoute } from "../data/camino";
+import { Navigation } from "lucide-react";
 
 // Fix Leaflet default icon issue in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -46,7 +47,10 @@ interface MapViewProps {
 
 export function MapView({ route, currentStageIndex }: MapViewProps) {
   const positions = route.stages.map(s => s.coordinates);
-  
+  const [userPos, setUserPos] = useState<[number, number] | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+
   const allPoints: [number, number][] = [
     route.startCoordinates,
     ...positions
@@ -54,10 +58,46 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
 
   const currentCenter = route.stages[currentStageIndex]?.coordinates || route.startCoordinates;
 
+  const handleLocate = () => {
+    if (!navigator.geolocation) {
+      setGpsError("GPS niedostępny");
+      return;
+    }
+    setGpsLoading(true);
+    setGpsError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPos([pos.coords.latitude, pos.coords.longitude]);
+        setGpsLoading(false);
+      },
+      () => {
+        setGpsError("Nie można pobrać lokalizacji");
+        setGpsLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   return (
     <div className="h-screen w-full relative pb-16">
       <div className="absolute top-0 left-0 right-0 z-[400] bg-gradient-to-b from-white/80 to-transparent pt-12 pb-6 px-6 pointer-events-none">
         <h1 className="font-serif text-2xl text-camino-blue drop-shadow-sm">{route.name}</h1>
+      </div>
+
+      {/* GPS button */}
+      <div className="absolute bottom-20 right-4 z-[400] flex flex-col items-end space-y-2">
+        {gpsError && (
+          <div className="bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded-lg shadow">
+            {gpsError}
+          </div>
+        )}
+        <button
+          onClick={handleLocate}
+          disabled={gpsLoading}
+          className="w-12 h-12 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-camino-blue hover:bg-camino-sand transition-colors disabled:opacity-60"
+        >
+          <Navigation className={`w-5 h-5 ${gpsLoading ? "animate-pulse" : ""} ${userPos ? "fill-camino-blue" : ""}`} />
+        </button>
       </div>
       
       <MapContainer 
@@ -81,8 +121,8 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
         />
 
         {route.stages.map((stage, index) => (
-          <Marker 
-            key={stage.id} 
+          <Marker
+            key={stage.id}
             position={stage.coordinates}
             icon={index === currentStageIndex ? activeIcon : customIcon}
           >
@@ -95,6 +135,21 @@ export function MapView({ route, currentStageIndex }: MapViewProps) {
             </Popup>
           </Marker>
         ))}
+
+        {userPos && (
+          <>
+            <Circle
+              center={userPos}
+              radius={50}
+              pathOptions={{ color: "#2563eb", fillColor: "#3b82f6", fillOpacity: 0.6, weight: 2 }}
+            />
+            <Circle
+              center={userPos}
+              radius={200}
+              pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.1, weight: 1 }}
+            />
+          </>
+        )}
       </MapContainer>
     </div>
   );

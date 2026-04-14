@@ -1,5 +1,5 @@
 import { Stage } from "../data/camino";
-import { Play, Pause, SkipForward, SkipBack, Headphones, ChevronLeft, ChevronRight, Bed, Droplets, Info, AlertTriangle, Star, MapPin } from "lucide-react";
+import { Play, Pause, SkipForward, SkipBack, Headphones, ChevronLeft, ChevronRight, Droplets, Info, AlertTriangle, Star, MapPin, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../lib/utils";
 
@@ -9,6 +9,7 @@ interface StageViewProps {
   onShowPaywall: () => void;
   onPrevStage?: () => void;
   onNextStage?: () => void;
+  onCompleteStage?: () => void;
   hasPrev: boolean;
   hasNext: boolean;
   totalStages: number;
@@ -31,7 +32,7 @@ const accommodationTypeConfig = {
   hotel: { label: "Hotel", color: "bg-gray-100 text-gray-600" },
 };
 
-export function StageView({ stage, isPremium, onShowPaywall, onPrevStage, onNextStage, hasPrev, hasNext, totalStages }: StageViewProps) {
+export function StageView({ stage, isPremium, onShowPaywall, onPrevStage, onNextStage, onCompleteStage, hasPrev, hasNext, totalStages }: StageViewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeSection, setActiveSection] = useState<Section>("devotion");
 
@@ -295,6 +296,19 @@ export function StageView({ stage, isPremium, onShowPaywall, onPrevStage, onNext
               <strong>Booking tip:</strong> Municipal albergues are first-come-first-served and open around 1-2pm. Private albergues can be booked in advance. Donativo albergues run on trust — leave what you can (€5-10 typical).
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Complete Stage Button */}
+      {onCompleteStage && hasNext && (
+        <div className="mt-8">
+          <button
+            onClick={onCompleteStage}
+            className="w-full flex items-center justify-center space-x-2 py-4 rounded-2xl bg-green-500 text-white font-bold text-base shadow-md hover:bg-green-600 transition-colors"
+          >
+            <CheckCircle2 className="w-6 h-6" />
+            <span>Etap ukończony — następny dzień</span>
+          </button>
         </div>
       )}
     </div>
